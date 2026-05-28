@@ -1,4 +1,9 @@
+// ==========================================
+// MODULE: MINING DAILY SHEET (mining.js)
+// ==========================================
 const MiningModule = {
+    editId: null, // Edit Track করার জন্য ভেরিয়েবল
+
     calculateTotalsOnly: function() {
         this.renderTable();
     }, 
@@ -92,7 +97,11 @@ const MiningModule = {
                     </div>
                     <div><label>Load Charge</label><input type="number" id="ms-load" value="1300" step="any"></div>
                     <div><label>Net Balance</label><input type="number" id="ms-net-amount" value="12012" readonly style="color:var(--green); font-size:14px; background:#e8f8f5;"></div>
-                    <div><button class="btn-action" onclick="MiningModule.saveSingle()">SAVE ENTRY</button></div>
+                    
+                    <div style="display:flex; gap:10px; grid-column: span 2;">
+                        <button id="ms-save-btn" class="btn-action" onclick="MiningModule.saveSingle()" style="flex:1;">SAVE ENTRY</button>
+                        <button id="ms-cancel-btn" class="btn-action" onclick="MiningModule.cancelEdit()" style="display:none; background:var(--red);">CANCEL</button>
+                    </div>
                 </div>
             </div>
 
@@ -129,7 +138,7 @@ const MiningModule = {
                                 <th style="padding: 5px; font-size: 11px;">LOADING MACHINE</th>
                                 <th style="padding: 5px; font-size: 11px;">LOAD CHARGE</th>
                                 <th style="padding: 5px; font-size: 11px;">NET BALANCE</th>
-                                <th class="no-print" style="width:50px; padding: 5px; font-size: 11px;">ACT</th>
+                                <th class="no-print" style="width:70px; padding: 5px; font-size: 11px; text-align:center;">ACT</th>
                             </tr>
                         </thead>
                         <tbody id="mining-sheet-table-body"></tbody>
@@ -194,6 +203,49 @@ const MiningModule = {
         if(document.getElementById('ms-net-amount')) document.getElementById('ms-net-amount').value = finalNetBalance;
     },
 
+    // Edit Function
+    editRow: function(id) {
+        const record = App.db.mining_sheet_db.find(item => item.id === id);
+        if(!record) return;
+
+        this.editId = id; // Set edit mode
+        
+        document.getElementById('ms-date').value = record.date;
+        document.getElementById('ms-truck').value = record.truckNo;
+        document.getElementById('ms-wheel').value = record.wheel;
+        document.getElementById('ms-sand-rate').value = record.rateAtTimeOfEntry || record.sandRate;
+        document.getElementById('ms-phone-pay').value = record.phonePay;
+        document.getElementById('ms-bank-account').value = record.bankAccount || "PhonePay";
+        document.getElementById('ms-cft').value = record.cft;
+        document.getElementById('ms-loading').value = record.loadingMachine || "VOLVO";
+        document.getElementById('ms-load').value = record.loadingCharge;
+
+        this.calculateLiveAmounts(); // Recalculate based on fetched data
+
+        // Change UI to indicate Edit Mode
+        const saveBtn = document.getElementById('ms-save-btn');
+        saveBtn.innerText = "UPDATE ENTRY";
+        saveBtn.style.background = "var(--accent)"; // Orange color
+        document.getElementById('ms-cancel-btn').style.display = "block";
+
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
+    },
+
+    // Cancel Edit Function
+    cancelEdit: function() {
+        this.editId = null;
+        document.getElementById('ms-truck').value = "";
+        document.getElementById('ms-phone-pay').value = "0";
+        document.getElementById('ms-phone-ex').value = "0";
+        
+        const saveBtn = document.getElementById('ms-save-btn');
+        saveBtn.innerText = "SAVE ENTRY";
+        saveBtn.style.background = "var(--p-color)"; // Original color
+        document.getElementById('ms-cancel-btn').style.display = "none";
+        
+        this.autoFillRates();
+    },
+
     saveSingle: function() {
         const truckNo = document.getElementById('ms-truck')?.value.trim().toUpperCase();
         if(!truckNo) return alert("Truck No is missing!");
@@ -206,7 +258,7 @@ const MiningModule = {
         let currentRoyFactor = master ? master.royaltyPerCft : 25;
 
         const rowData = {
-            id: Date.now(),
+            id: this.editId ? this.editId : Date.now(), // Use existing ID if editing
             date: document.getElementById('ms-date').value,
             truckNo: truckNo, 
             wheel: wheelSelected,
@@ -225,15 +277,24 @@ const MiningModule = {
             royaltyAtTimeOfEntry: currentRoyFactor
         };
 
-        App.db.mining_sheet_db.push(rowData);
-        document.getElementById('ms-truck').value = "";
-        document.getElementById('ms-phone-pay').value = "0";
-        document.getElementById('ms-phone-ex').value = "0";
-        
+        if (this.editId) {
+            // Update Existing Record
+            const index = App.db.mining_sheet_db.findIndex(item => item.id === this.editId);
+            if (index !== -1) App.db.mining_sheet_db[index] = rowData;
+            alert("Entry Updated Successfully!");
+            this.cancelEdit(); // Reset form and ID
+        } else {
+            // Add New Record
+            App.db.mining_sheet_db.push(rowData);
+            document.getElementById('ms-truck').value = "";
+            document.getElementById('ms-phone-pay').value = "0";
+            document.getElementById('ms-phone-ex').value = "0";
+            alert("Entry Saved Successfully!");
+            this.autoFillRates(); 
+        }
+
         App.saveToLocalStorage();
-        this.autoFillRates(); 
         this.renderTable();
-        alert("Entry Saved Successfully!");
     },
 
     parseBulk: function() {
@@ -376,6 +437,7 @@ const MiningModule = {
                 machineSummaryData[mName].wheelBreakdown[wType] += 1;
             }
 
+            // 🔹 Action কলামে Edit এবং Delete বাটন
             rowsHtml += `
                 <tr style="font-size:12px;">
                     <td style="padding:4px;">${index + 1}</td>
@@ -400,8 +462,9 @@ const MiningModule = {
                     </td>
                     <td style="font-weight:bold; color:#000; padding:4px;">₹${currentLoad > 0 ? currentLoad.toFixed(2) : '0.00'}</td>
                     <td class="hl-green" style="padding:4px; font-weight:bold;">₹${correctedNet.toFixed(2)}</td>
-                    <td class="no-print" style="padding:4px;">
-                        <button onclick="MiningModule.deleteRow(${row.id})" style="color:var(--red); background:none; border:none; cursor:pointer; font-weight:bold;">Del</button>
+                    <td class="no-print" style="padding:4px; text-align:center;">
+                        <button onclick="MiningModule.editRow(${row.id})" style="color:var(--p-color); background:none; border:none; cursor:pointer; font-weight:bold; margin-right:8px;" title="Edit Entry">Edit</button>
+                        <button onclick="MiningModule.deleteRow(${row.id})" style="color:var(--red); background:none; border:none; cursor:pointer; font-weight:bold;" title="Delete Entry">Del</button>
                     </td>
                 </tr>`;
         });
@@ -419,7 +482,7 @@ const MiningModule = {
                 <td style="padding:5px;">₹${totalLoad.toFixed(2)}</td>
                 <td style="background:#27ae60 !important; color:white !important; font-weight:900; padding:5px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">₹${totalNetAmount.toFixed(2)}</td>
                 <td class="no-print" style="padding:5px;"></td>
-            </tr>`) : `<tr><td colspan="12" style="padding:20px; color:#7f8c8d; text-align:center;">No Entries Found For This Date.</td></tr>`;
+            </tr>`) : `<tr><td colspan="13" style="padding:20px; color:#7f8c8d; text-align:center;">No Entries Found For This Date.</td></tr>`;
 
         App.currentGlobalJomaSum = totalNetAmount;
         App.currentGlobalRtSum = totalRtAmount;
@@ -498,7 +561,7 @@ const MiningModule = {
                 `;
             }
 
-            // 🔹 ৩. মেশিন ব্রেকডাউন ডাইনামিক রেন্ডারিং (সেন্টার এবং ব্লু হেডার)
+            // 🔹 ৩. মেশিন ব্রেকডাউন ডাইনামিক রেন্ডারিং
             let dynamicMachineTablesHtml = "";
             for (let mac in machineSummaryData) {
                 let macData = machineSummaryData[mac];
