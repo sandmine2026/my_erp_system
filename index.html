@@ -8,7 +8,7 @@
 </head>
 <body>
 
-    <div id="sidebar" class="no-print">
+    <div id="sidebar" class="no-print" style="display: none;">
         <div class="logo-wrap">
             <img src="assets/sandmine.png" alt="Logo" style="height: 45px; width: auto; margin-bottom: 5px; object-fit: contain;">
             <div class="logo-text" id="main-logo-text">MINE ERP SYSTEM</div>
@@ -59,12 +59,10 @@
         <div class="menu-head admin-only">System Configuration</div>
         <button class="menu-btn admin-only" onclick="App.showPage('master-settings', this)" style="color: #f1c40f;">⚙️ MASTER SETTINGS</button>
         
-        <!-- Logout Section -->
         <div style="padding: 20px 20px 0 20px; margin-top: auto;" class="no-print" id="logout-section">
             <button class="menu-btn" onclick="App.logout()" style="background: #e74c3c; color: white !important; font-weight: bold; border-radius: 6px; text-align: center; border: none; width: 100%; padding: 10px;">🔒 LOGOUT SYSTEM</button>
         </div>
 
-        <!-- 🔹 Developer Credit Section -->
         <div class="no-print" style="text-align: center; padding: 15px 20px 20px 20px; margin-top: 10px;">
             <div style="font-size: 10px; color: #7f8c8d; letter-spacing: 0.5px; text-transform: uppercase;">Crafted & Developed By</div>
             <div style="font-size: 14px; color: #2ecc71; font-weight: 900; margin-top: 3px; letter-spacing: 1px;">ARUP MALIK</div>
@@ -75,24 +73,20 @@
         <div id="page-content" class="container"></div>
     </div>
 
-    <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
-    <!-- Main Scripts -->
     <script src="main_js/app.js"></script>
     <script src="main_js/dashboard.js"></script>
     <script src="main_js/ghat.js"></script>
     <script src="main_js/master_settings.js"></script>
 
-    <!-- Mining Scripts -->
     <script src="mining/mining_dashboard.js"></script>
     <script src="mining/mining.js"></script>
     <script src="mining/diesel.js"></script>
     <script src="mining/expenses.js"></script>
     <script src="mining/mining_machines.js"></script>
 
-    <!-- Stock Scripts -->
     <script src="stock/stock_dashboard.js"></script>
     <script src="stock/stock_daily.js"></script>
     <script src="stock/stock_expenses.js"></script>
@@ -100,7 +94,6 @@
     <script src="stock/stock_manual.js"></script>
     <script src="stock/stock_vehicles.js"></script> 
     
-    <!-- Production Scripts -->
     <script src="stock_productions/production_dashboard.js"></script>
     <script src="stock_productions/production_daily.js"></script>
     <script src="stock_productions/stock_production.js"></script>
@@ -110,13 +103,14 @@
     <script src="stock_productions/production_manual.js"></script>
     
     <script>
-        window.onload = () => {
+        // 🔹 পরিবর্তন ২: window.onload এর বদলে DOMContentLoaded ব্যবহার করা হলো যাতে স্ক্রিপ্ট মুহূর্তের মধ্যে রান করে
+        document.addEventListener('DOMContentLoaded', () => {
             if(typeof App !== 'undefined') {
                 App.init();
             } else {
                 console.error("App object not found!");
             }
-        };
+        });
 
         function toggleMenu(menuId) {
             const mm = document.getElementById(menuId);
