@@ -21,36 +21,53 @@
         </div>
 
         <div class="menu-head">Mining Register</div>
-        
         <button class="menu-btn" onclick="App.showPage('mining-dash', this)" style="color:#3498db;">📊 MINING DASHBOARD</button>
-        
         <button class="menu-btn" onclick="toggleMenu('mining-submenu')">⛏️ MINING RECORDS ▾</button>
         <div id="mining-submenu" style="display:none; padding-left:10px; background: #13263d;">
             <button class="menu-btn sub-menu-btn" onclick="App.showPage('mining', this)">📝 Daily Sheet</button>
             <button class="menu-btn sub-menu-btn" onclick="App.showPage('expenses', this)">💸 Expense Panel</button>
             <button class="menu-btn sub-menu-btn" onclick="App.showPage('diesel', this)">⛽ Diesel Entries</button>
             <button class="menu-btn sub-menu-btn admin-only" onclick="App.showPage('ghats', this)">⚙️ Diesel Settings</button>
+            <button class="menu-btn sub-menu-btn" onclick="App.showPage('mining-machines', this)">🚜 Machine Panel</button>
+        </div>
+
+        <div class="menu-head">Production Control</div>
+        <button class="menu-btn" onclick="App.showPage('production-dash', this)" style="color:#16a085;">📊 PRODUCTION DASHBOARD</button>
+        
+        <button class="menu-btn" onclick="toggleMenu('production-submenu')">🏗️ SAND PRODUCTION ▾</button>
+        <div id="production-submenu" style="display:none; padding-left:10px; background: #13263d;">
+            <button class="menu-btn sub-menu-btn" onclick="App.showPage('production-daily', this)" style="color:#f1c40f;">📝 Daily Cash Sheet</button>
+            <button class="menu-btn sub-menu-btn" onclick="App.showPage('stock-production', this)">📝 Sand Production</button>
+            <button class="menu-btn sub-menu-btn" onclick="App.showPage('stock-vehicles', this)">🚚 Vehicle Panel</button>
+            <button class="menu-btn sub-menu-btn" onclick="App.showPage('production-machines', this)">🚜 Production Machines</button>
+            <button class="menu-btn sub-menu-btn" onclick="App.showPage('production-diesel', this)">⛽ Diesel Entries</button>
+            <button class="menu-btn sub-menu-btn" onclick="App.showPage('production-expenses', this)">💸 Other Expenses</button>
+            <button class="menu-btn sub-menu-btn" onclick="App.showPage('production-manual', this)">➕ Manual Adjustments</button>
         </div>
 
         <div class="menu-head">Inventory & Stock</div>
-        
         <button class="menu-btn" onclick="App.showPage('stock-dash', this)" style="color:#9b59b6;">📊 STOCK DASHBOARD</button>
-        
         <button class="menu-btn" onclick="toggleMenu('stock-submenu')">📦 STOCK SECTION ▾</button>
         <div id="stock-submenu" style="display:none; padding-left:10px; background: #13263d;">
             <button class="menu-btn sub-menu-btn" onclick="App.showPage('stock', this)">📝 Daily Sheet</button>
             <button class="menu-btn sub-menu-btn" onclick="App.showPage('stock-expenses', this)">💸 Expense Panel</button>
             <button class="menu-btn sub-menu-btn" onclick="App.showPage('diesel', this)">⛽ Diesel Entries</button>
-            <button class="menu-btn sub-menu-btn" onclick="App.showPage('stock-vehicles', this)">🚚 Vehicle Panel</button>
-            <button class="menu-btn sub-menu-btn" onclick="App.showPage('stock-machines', this)">🚜 Machine Panel</button>
+            <button class="menu-btn sub-menu-btn" onclick="App.showPage('stock-machines', this)">🚜 Stock Machine</button>
             <button class="menu-btn sub-menu-btn" onclick="App.showPage('stock-manual', this)">➕ Manual Adjustments</button> 
         </div>
 
         <div class="menu-head admin-only">System Configuration</div>
         <button class="menu-btn admin-only" onclick="App.showPage('master-settings', this)" style="color: #f1c40f;">⚙️ MASTER SETTINGS</button>
         
-        <div style="padding: 20px; margin-top: auto;" class="no-print" id="logout-section">
+        <!-- Logout Section -->
+        <div style="padding: 20px 20px 0 20px; margin-top: auto;" class="no-print" id="logout-section">
             <button class="menu-btn" onclick="App.logout()" style="background: #e74c3c; color: white !important; font-weight: bold; border-radius: 6px; text-align: center; border: none; width: 100%; padding: 10px;">🔒 LOGOUT SYSTEM</button>
+        </div>
+
+        <!-- 🔹 Developer Credit Section -->
+        <div class="no-print" style="text-align: center; padding: 15px 20px 20px 20px; margin-top: 10px;">
+            <div style="font-size: 10px; color: #7f8c8d; letter-spacing: 0.5px; text-transform: uppercase;">Crafted & Developed By</div>
+            <div style="font-size: 14px; color: #2ecc71; font-weight: 900; margin-top: 3px; letter-spacing: 1px;">ARUP MALIK</div>
         </div>
     </div>
 
@@ -58,25 +75,39 @@
         <div id="page-content" class="container"></div>
     </div>
 
+    <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
+    <!-- Main Scripts -->
     <script src="main_js/app.js"></script>
     <script src="main_js/dashboard.js"></script>
     <script src="main_js/ghat.js"></script>
     <script src="main_js/master_settings.js"></script>
 
+    <!-- Mining Scripts -->
     <script src="mining/mining_dashboard.js"></script>
     <script src="mining/mining.js"></script>
     <script src="mining/diesel.js"></script>
     <script src="mining/expenses.js"></script>
+    <script src="mining/mining_machines.js"></script>
 
+    <!-- Stock Scripts -->
     <script src="stock/stock_dashboard.js"></script>
     <script src="stock/stock_daily.js"></script>
     <script src="stock/stock_expenses.js"></script>
-    <script src="stock/stock_vehicles.js"></script>
     <script src="stock/stock_machines.js"></script>
     <script src="stock/stock_manual.js"></script>
+    <script src="stock/stock_vehicles.js"></script> 
+    
+    <!-- Production Scripts -->
+    <script src="stock_productions/production_dashboard.js"></script>
+    <script src="stock_productions/production_daily.js"></script>
+    <script src="stock_productions/stock_production.js"></script>
+    <script src="stock_productions/production_machines.js"></script>
+    <script src="stock_productions/production_diesel.js"></script>
+    <script src="stock_productions/production_expenses.js"></script>
+    <script src="stock_productions/production_manual.js"></script>
     
     <script>
         window.onload = () => {
