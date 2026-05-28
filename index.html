@@ -5,6 +5,78 @@
     <title>MINE ERP SYSTEM</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="assets/sandmine.png">
+    
+    <style id="dark-mode-styles">
+        /* 🌙 Dark Mode Toggle Switch CSS */
+        .theme-switch-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 2px solid #1a252f; background: #0f1c2d; }
+        .theme-switch { display: inline-block; position: relative; width: 44px; height: 22px; margin: 0; }
+        .theme-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #34495e; transition: .4s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #2ecc71; }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* 🌙 Dark Mode Global Overrides */
+        body.dark-mode { background-color: #0f172a !important; color: #f1f5f9 !important; }
+        
+        body.dark-mode .card, body.dark-mode .erp-card, body.dark-mode .d-card { 
+            background-color: #1e293b !important; 
+            border-color: #334155 !important; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3) !important;
+        }
+        
+        body.dark-mode .erp-card-header, body.dark-mode .d-stat-card, body.dark-mode .mm-stat-card { 
+            background-color: #0f172a !important; 
+            border-color: #334155 !important; 
+            color: #e2e8f0 !important; 
+        }
+        
+        body.dark-mode .erp-page-header, body.dark-mode .d-tab-bar, body.dark-mode .mm-nav { 
+            background-color: #1e293b !important; 
+            border-color: #334155 !important; 
+        }
+        
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { 
+            background-color: #0f172a !important; 
+            color: #f1f5f9 !important; 
+            border-color: #475569 !important; 
+        }
+        
+        body.dark-mode .erp-table th, body.dark-mode .d-table th, body.dark-mode .unique-table th { 
+            background-color: #020617 !important; 
+            color: #e2e8f0 !important; 
+            border-color: #334155 !important; 
+        }
+        
+        body.dark-mode .erp-table td, body.dark-mode .d-table td, body.dark-mode .unique-table td { 
+            border-color: #334155 !important; 
+            color: #cbd5e1 !important; 
+        }
+        
+        body.dark-mode .erp-table tr:hover, body.dark-mode .d-table tr:hover { 
+            background-color: #334155 !important; 
+        }
+        
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode label, body.dark-mode .erp-page-title, body.dark-mode .summary-label { 
+            color: #e2e8f0 !important; 
+        }
+        
+        body.dark-mode .summary-value { 
+            background-color: #0f172a !important; 
+        }
+        
+        body.dark-mode .d-tab-btn, body.dark-mode .mm-tab-btn { 
+            background-color: #0f172a !important; 
+            color: #94a3b8 !important; 
+        }
+        
+        body.dark-mode .d-tab-btn.active, body.dark-mode .mm-tab-btn.active { 
+            background-color: var(--p-color, #3498db) !important; 
+            color: white !important; 
+        }
+        
+        body.dark-mode .erp-card-body.form-grid { background-color: #1e293b !important; }
+    </style>
 </head>
 <body>
 
@@ -15,9 +87,18 @@
             <div id="cloud-status" style="font-size: 11px; color: #27ae60; margin-top: 5px; font-weight: bold; letter-spacing: 0.5px;">☁️ CONNECTING...</div>
         </div>
         
-        <div class="ghat-selector-wrap" style="padding: 15px 20px; background: #13263d; border-bottom: 2px solid var(--accent);">
+        <div class="ghat-selector-wrap" style="padding: 15px 20px; background: #13263d; border-bottom: 1px solid #1a252f;">
             <label style="color:#bdc3c7; font-size:10px; margin-bottom:3px; display:block; font-weight:bold;">SELECT GHAT / SITE</label>
             <select id="global-ghat-selector" onchange="App.changeGhatFilter()" style="background:#1a252f; color:white; border:1px solid #34495e; width:100%; padding:8px; font-weight:bold; border-radius:4px;"></select>
+        </div>
+
+        <!-- 🌙 Dark Mode Switcher -->
+        <div class="theme-switch-wrapper">
+            <span style="color: #bdc3c7; font-size: 11px; font-weight: bold; letter-spacing: 1px;">DARK MODE</span>
+            <label class="theme-switch">
+                <input type="checkbox" id="checkbox-theme" onchange="toggleDarkMode(this)">
+                <span class="slider"></span>
+            </label>
         </div>
 
         <div class="menu-head">Mining Register</div>
@@ -103,8 +184,28 @@
     <script src="stock_productions/production_manual.js"></script>
     
     <script>
-        // 🔹 পরিবর্তন ২: window.onload এর বদলে DOMContentLoaded ব্যবহার করা হলো যাতে স্ক্রিপ্ট মুহূর্তের মধ্যে রান করে
+        // 🌙 Dark Mode Toggle Logic
+        function toggleDarkMode(checkbox) {
+            if (checkbox.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('mine_erp_theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('mine_erp_theme', 'light');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Apply saved theme on load
+            const savedTheme = localStorage.getItem('mine_erp_theme');
+            const themeCheckbox = document.getElementById('checkbox-theme');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                if(themeCheckbox) themeCheckbox.checked = true;
+            }
+
+            // Init App
             if(typeof App !== 'undefined') {
                 App.init();
             } else {
