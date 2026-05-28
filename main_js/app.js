@@ -1,5 +1,5 @@
 // ==========================================
-// MAIN APP MODULE (app.js)
+// MAIN APP MODULE (app.js) - Session Secure
 // ==========================================
 const ADMIN_MASTER_PIN = "9999"; 
 
@@ -71,6 +71,23 @@ const App = {
 
     init: function() {
         const statusEl = document.getElementById('cloud-status');
+        
+        // ১. অটো লগআউট সিস্টেম: sessionStorage ব্যবহার করা হচ্ছে
+        this.isLoggedIn = sessionStorage.getItem('mine_erp_logged_in') === 'true';
+        this.isAdmin = sessionStorage.getItem('mine_erp_is_admin') === 'true';
+
+        if (!this.isLoggedIn) {
+            this.renderLoginScreen();
+        } else {
+            document.getElementById('sidebar').style.display = "flex";
+            const savedGhat = localStorage.getItem('mine_erp_active_ghat');
+            if (savedGhat && document.getElementById('global-ghat-selector')) {
+                document.getElementById('global-ghat-selector').value = savedGhat;
+            }
+            this.showPage(this.currentPage);
+        }
+
+        // ২. ফায়ারবেস কানেকশন
         try {
             if (!firebase.apps.length) firebase.initializeApp(this.firebaseConfig);
             if(statusEl) statusEl.innerHTML = "⚡ SYNCING...";
@@ -111,24 +128,18 @@ const App = {
                     this.db.ghats = cloudData.ghats || this.db.ghats;
                     this.db.ghats_security_directory = cloudData.ghats_security_directory || this.db.ghats_security_directory;
                     this.db.master_settings = cloudData.master_settings || this.db.master_settings;
+                    this.db.ghats_rate_master = cloudData.ghats_rate_master || this.db.ghats_rate_master;
                 }
+                
                 this.updateGhatDropdown();
                 
-                if (localStorage.getItem('mine_erp_logged_in') === 'true') {
-                    this.isLoggedIn = true;
-                    this.isAdmin = localStorage.getItem('mine_erp_is_admin') === 'true'; 
-                    document.getElementById('sidebar').style.display = "flex";
-                    const savedGhat = localStorage.getItem('mine_erp_active_ghat');
-                    if (savedGhat && document.getElementById('global-ghat-selector')) {
-                        document.getElementById('global-ghat-selector').value = savedGhat;
-                    }
-                    this.showPage(this.currentPage);
-                } else {
-                    this.renderLoginScreen();
+                if(this.isLoggedIn) {
+                    this.refreshCurrentPageData();
                 }
+                
                 if(statusEl) statusEl.innerHTML = "☁️ ONLINE LIVE";
             }, (error) => {
-                console.log("Firebase direct connection enforced.");
+                console.log("Firebase connection error.");
             });
             
         } catch (e) { 
@@ -184,11 +195,11 @@ const App = {
         const enteredPin = document.getElementById('login-pin').value.trim();
         if (enteredPin === ADMIN_MASTER_PIN) {
             this.isAdmin = true;
-            localStorage.setItem('mine_erp_is_admin', 'true');
+            sessionStorage.setItem('mine_erp_is_admin', 'true');
             this.finalizeLogin(selectedGhat);
         } else if (enteredPin === this.db.ghats_security_directory[selectedGhat]) {
             this.isAdmin = false;
-            localStorage.setItem('mine_erp_is_admin', 'false');
+            sessionStorage.setItem('mine_erp_is_admin', 'false');
             this.finalizeLogin(selectedGhat);
         } else {
             document.getElementById('login-error').style.display = "block";
@@ -197,7 +208,8 @@ const App = {
 
     finalizeLogin: function(selectedGhat) {
         this.isLoggedIn = true;
-        localStorage.setItem('mine_erp_logged_in', 'true');
+        sessionStorage.setItem('mine_erp_logged_in', 'true');
+        // ঘাটের নামটা localStorage-এই রাখছি যাতে পরের বার খুললে আপনার সিলেক্ট করা ঘাটটাই আগে দেখায়
         localStorage.setItem('mine_erp_active_ghat', selectedGhat);
         window.location.reload(); 
     },
@@ -206,8 +218,8 @@ const App = {
         if(confirm("লগআউট করতে চান?")) {
             this.isLoggedIn = false;
             this.isAdmin = false;
-            localStorage.removeItem('mine_erp_logged_in');
-            localStorage.removeItem('mine_erp_is_admin');
+            sessionStorage.removeItem('mine_erp_logged_in');
+            sessionStorage.removeItem('mine_erp_is_admin');
             window.location.reload();
         }
     },
@@ -237,19 +249,16 @@ const App = {
     refreshCurrentPageData: function() {
         if (!this.isLoggedIn) return;
         
-        // Mining
         if(this.currentPage === 'mining') MiningModule.renderTable();
         else if(this.currentPage === 'expenses') ExpensesModule.renderTable();
         else if(this.currentPage === 'diesel') DieselModule.init();
         else if(this.currentPage === 'mining-machines') MiningMachineModule.init(); 
         
-        // Stock
         else if(this.currentPage === 'stock') StockModule.renderTable();
         else if(this.currentPage === 'stock-expenses') StockExpensesModule.renderTable();
         else if(this.currentPage === 'stock-machines') StockMachineModule.init();
         else if(this.currentPage === 'stock-manual') StockManualEntryModule.renderTable(); 
         
-        // Production
         else if(this.currentPage === 'production-dash') ProductionDashboardModule.init(); 
         else if(this.currentPage === 'stock-production') StockProductionModule.init(); 
         else if(this.currentPage === 'production-machines') ProductionMachineModule.init(); 
@@ -258,12 +267,12 @@ const App = {
         else if(this.currentPage === 'production-manual') ProductionManualModule.renderTable(); 
         else if(this.currentPage === 'production-daily') ProductionDailyModule.init(); 
         
-        // Settings
         else if(this.currentPage === 'master-settings') MasterSettingsModule.init(); 
     },
 
     showPage: function(pageId, btn) {
         if (!this.isLoggedIn) return this.renderLoginScreen();
+        
         this.currentPage = pageId;
         if(btn) {
             document.querySelectorAll('.menu-btn, .sub-menu-btn').forEach(b => b.classList.remove('active'));
@@ -272,20 +281,17 @@ const App = {
         const content = document.getElementById('page-content');
         if(!content) return;
         
-        // Dashboards
         if(pageId === 'dashboard' || pageId === 'dash') { content.innerHTML = DashboardModule.getHTML(); DashboardModule.init(); }
         else if(pageId === 'mining-dash') { content.innerHTML = MiningDashboardModule.getHTML(); MiningDashboardModule.init(); }
         else if(pageId === 'stock-dash') { content.innerHTML = StockDashboardModule.getHTML(); StockDashboardModule.init(); }
         else if(pageId === 'production-dash') { content.innerHTML = ProductionDashboardModule.getHTML(); ProductionDashboardModule.init(); } 
         
-        // Mining Modules
         else if(pageId === 'mining') { content.innerHTML = MiningModule.getHTML(); MiningModule.init(); }
         else if(pageId === 'expenses') { content.innerHTML = ExpensesModule.getHTML(); ExpensesModule.init(); }
         else if(pageId === 'diesel') { content.innerHTML = DieselModule.getHTML(); DieselModule.init(); }
         else if(pageId === 'ghats') { content.innerHTML = GhatModule.getHTML(); GhatModule.init(); }
         else if(pageId === 'mining-machines') { content.innerHTML = MiningMachineModule.getHTML(); MiningMachineModule.init(); } 
         
-        // Production Modules
         else if(pageId === 'stock-production') { content.innerHTML = StockProductionModule.getHTML(); StockProductionModule.init(); }
         else if(pageId === 'stock-vehicles') { content.innerHTML = StockVehicleModule.getHTML(); StockVehicleModule.init(); }
         else if(pageId === 'production-machines') { content.innerHTML = ProductionMachineModule.getHTML(); ProductionMachineModule.init(); } 
@@ -294,13 +300,11 @@ const App = {
         else if(pageId === 'production-manual') { content.innerHTML = ProductionManualModule.getHTML(); ProductionManualModule.init(); } 
         else if(pageId === 'production-daily') { content.innerHTML = ProductionDailyModule.getHTML(); ProductionDailyModule.init(); } 
         
-        // Stock Modules
         else if(pageId === 'stock') { content.innerHTML = StockModule.getHTML(); StockModule.init(); }
         else if(pageId === 'stock-expenses') { content.innerHTML = StockExpensesModule.getHTML(); StockExpensesModule.init(); }
         else if(pageId === 'stock-machines') { content.innerHTML = StockMachineModule.getHTML(); StockMachineModule.init(); }
         else if(pageId === 'stock-manual') { content.innerHTML = StockManualEntryModule.getHTML(); StockManualEntryModule.init(); }
         
-        // Master Settings
         else if(pageId === 'master-settings') { content.innerHTML = MasterSettingsModule.getHTML(); MasterSettingsModule.init(); }
         
         this.hideSensitiveMenus();
