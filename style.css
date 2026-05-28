@@ -1,15 +1,15 @@
 /* ====================================================
-   MINE ERP SYSTEM - GLOBAL STYLESHEET (style.css)
+    MINE ERP SYSTEM - GLOBAL STYLESHEET (style.css)
 ==================================================== */
 
 :root {
-    --p-color: #2980b9;      /* Primary Blue */
-    --s-color: #2c3e50;      /* Secondary Dark */
-    --accent: #e67e22;       /* Accent Orange */
-    --red: #e74c3c;          /* Danger Red */
-    --green: #27ae60;        /* Success Green */
-    --bg-color: #f4f7f6;     /* App Background */
-    --sidebar-bg: #0b1a2a;   /* Sidebar Dark */
+    --p-color: #2980b9;    /* Primary Blue */
+    --s-color: #2c3e50;    /* Secondary Dark */
+    --accent: #e67e22;     /* Accent Orange */
+    --red: #e74c3c;        /* Danger Red */
+    --green: #27ae60;      /* Success Green */
+    --bg-color: #f4f7f6;   /* App Background */
+    --sidebar-bg: #0b1a2a; /* Sidebar Dark */
     --sidebar-hover: #13263d;
     --text-main: #333333;
     --text-muted: #7f8c8d;
@@ -194,20 +194,6 @@ input[readonly] {
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-.bulk-area {
-    height: 120px;
-    resize: vertical;
-    font-family: monospace;
-    font-size: 12px;
-}
-
-.bulk-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
 /* ==========================================
    TABLES
 ========================================== */
@@ -248,44 +234,18 @@ input[readonly] {
 .hl-blue { color: var(--p-color); font-weight: bold; }
 
 /* ==========================================
-   SCROLLBAR STYLES
+   SCROLLBAR & PRINT STYLES
 ========================================== */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: #f1f1f1; }
 ::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #95a5a6; }
 
-/* ==========================================
-   PRINT STYLES
-========================================== */
 @media print {
-    body {
-        background-color: white;
-        height: auto;
-        overflow: visible;
-    }
-    #sidebar, .no-print {
-        display: none !important;
-    }
-    #main {
-        padding: 0;
-        margin: 0;
-        width: 100%;
-    }
-    .card {
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-    .print-only {
-        display: inline-block !important;
-    }
-    table {
-        page-break-inside: auto;
-    }
-    tr {
-        page-break-inside: avoid;
-        page-break-after: auto;
-    }
+    body { background-color: white; height: auto; overflow: visible; }
+    #sidebar, .no-print { display: none !important; }
+    #main { padding: 0; margin: 0; width: 100%; }
+    .card { border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+    table { page-break-inside: auto; }
+    tr { page-break-inside: avoid; page-break-after: auto; }
 }
