@@ -60,6 +60,8 @@ const DieselModule = {
                 .badge-edit:hover { background: #fde047; }
                 .badge-delete { background: #fecdd3; color: #be123c; margin-left: 5px; }
                 .badge-delete:hover { background: #fda4af; }
+                .badge-wa { background: #25D366; color: white; margin-left: 5px; }
+                .badge-wa:hover { background: #1ebe57; }
                 
                 .d-btn { background: #1e3a5f; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
 
@@ -133,7 +135,7 @@ const DieselModule = {
                                     <th style="text-align: center;">Vehicle / Party</th>
                                     <th style="text-align: center;">Entry Type</th>
                                     <th style="text-align: center;">Qty (Litre)</th>
-                                    <th class="no-print" style="width:120px; text-align: center;">Action</th>
+                                    <th class="no-print" style="width:180px; text-align: center;">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="recent-logs"></tbody>
@@ -257,6 +259,28 @@ const DieselModule = {
         if(p === 'dash') this.updateStockDash();
         if(p === 'p-history') this.loadPurchaseHistory();
         if(p === 'p-ledger') this.loadHistoryEdit();
+    },
+
+    // 📱 WhatsApp Message Generator
+    sendWhatsApp: function(type, id) {
+        let msg = "";
+        const currentGhat = document.getElementById('global-ghat-selector')?.value || "Naricha Sand Mine";
+
+        if(type === 'IN') {
+            const r = App.db.diesel_purchase.find(x => x.id === id);
+            msg = `*${currentGhat.toUpperCase()}*\n\n✅ *Fuel Purchased*\n📅 Date: ${r.date.split('-').reverse().join('/')}\n🏭 Vendor: ${r.source}\n🛢️ Quantity: ${r.qty} L\n💰 Rate: ₹${r.rate}/L\n💵 Total Bill: ₹${r.amount}\n\n_System Generated Message_`;
+        } else if(type === 'OUT') {
+            const r = App.db.diesel_issue.find(x => x.id === id);
+            msg = `*${currentGhat.toUpperCase()}*\n\n✅ *Fuel Issued*\n📅 Date: ${r.date.split('-').reverse().join('/')}\n🚛 Vehicle: ${r.target}\n👤 Driver: ${r.driver || 'N/A'}\n🛢️ Quantity: ${r.qty} L\n\n_System Generated Message_`;
+        } else if(type === 'PAY') {
+            const r = App.db.diesel_payments.find(x => x.id === id);
+            msg = `*${currentGhat.toUpperCase()}*\n\n💸 *Payment Receipt*\n📅 Date: ${r.date.split('-').reverse().join('/')}\n👤 Paid To: ${r.source}\n💰 Amount: ₹${r.amt}\n\n_System Generated Message_`;
+        }
+
+        if(msg) {
+            const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        }
     },
 
     savePurchase: function() {
@@ -398,7 +422,6 @@ const DieselModule = {
         const start = document.getElementById('f-start')?.value;
         const end = document.getElementById('f-end')?.value;
         
-        // 🔹 Update the Print Header Date Range
         const dateRangeEl = document.getElementById('print-d-date-range');
         if (dateRangeEl) {
             if (start && end) {
@@ -457,6 +480,7 @@ const DieselModule = {
                 <td class="no-print" style="text-align: center;">
                     <button class="badge-btn badge-edit" onclick="DieselModule.editItem('${l.m}', ${l.id})">Edit</button>
                     <button class="badge-btn badge-delete" onclick="DieselModule.del('${l.m}', ${l.id})">Del</button>
+                    <button class="badge-btn badge-wa" onclick="DieselModule.sendWhatsApp('${l.m}', ${l.id})" title="Send WhatsApp">💬 WA</button>
                 </td>
             </tr>`;
         });
@@ -509,6 +533,7 @@ const DieselModule = {
                 <td class="no-print" style="text-align:center;">
                     <button class="badge-btn badge-edit" onclick="DieselModule.editItem('${log.type}', ${log.id})">Edit</button>
                     <button class="badge-btn badge-delete" onclick="DieselModule.del('${log.type}', ${log.id})">Del</button>
+                    <button class="badge-btn badge-wa" onclick="DieselModule.sendWhatsApp('${log.type}', ${log.id})" title="Send WhatsApp">💬 WA</button>
                 </td>
             </tr>`;
         });
@@ -520,7 +545,6 @@ const DieselModule = {
         const headerEl = document.getElementById('print-d-ghat-title');
         if(headerEl) headerEl.innerText = currentGhat.toUpperCase();
         
-        // 🔹 Update Print Header Date Range for Ledger
         const dateRangeEl = document.getElementById('print-d-date-range');
         if (dateRangeEl) {
             dateRangeEl.innerText = `🗓️ VEHICLE LEDGER REPORT`;
